@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tu Tien - Avatar Update</title>
+<style>
+:root{--bg:#0e0f1e;--panel:#1c1e36;--gold:#f5c76a;--muted:#9aa0b8}
+body{background:var(--bg);color:#fff;font-family:sans-serif;padding:10px;margin:0}
+.panel{background:var(--panel);border-radius:16px;padding:14px;margin:10px 0;border:1px solid #2c2f4a}
+.badge{border-radius:20px;padding:4px 10px;background:#312d4a;color:var(--gold);font-size:12px}
+.bar{background:#0f1120;height:12px;border-radius:10px;overflow:hidden} .fill{background:linear-gradient(90deg,var(--gold),#ff9a3c);height:100%;width:0%;transition:.4s}
+button{padding:9px 13px;border-radius:10px;border:none;cursor:pointer;font-weight:bold} button.green{background:#2ecc71;color:#fff} button.secondary{background:#35385a;color:#fff} button.gold{background:var(--gold);color:#000}
+.hidden{display:none} .log{max-height:160px;overflow:auto;background:#0f1120;padding:8px;border-radius:8px;font-size:13px}
+.card{background:#2a2d4d;padding:10px;border-radius:12px;margin:6px 0}
+.muted{color:var(--muted)} .realm{font-size:18px;font-weight:bold} .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.actions{display:flex;flex-wrap:wrap;gap:6px} .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px} .stat{background:#2a2d4d;padding:10px;border-radius:10px;text-align:center}
+nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0} nav button{background:#23253a;color:#fff;border:1px solid #3a3d56}
+input{padding:12px;border-radius:10px;border:1px solid #3a3d56;background:#0f1120;color:#fff;width:100%;box-sizing:border-box;margin:6px 0}
+
+/* AVATAR */
+.charDisplay{display:flex;gap:12px;align-items:center;justify-content:center;padding:10px;background:radial-gradient(ellipse at center,#2a2d5a,#1c1e36);border-radius:16px;border:2px solid #3a3d56}
+.avatarBig{width:110px;height:110px;border-radius:20px;background:#11132a;display:flex;align-items:center;justify-content:center;font-size:70px;border:3px solid var(--gold);box-shadow:0 0 20px rgba(245,199,106,.5);position:relative;overflow:hidden}
+.avatarBig img{width:100%;height:100%;object-fit:cover}
+.equipIcon{position:absolute;font-size:24px;bottom:2px;right:2px}
+.avatarSelect{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.avatarOption{aspect-ratio:1;background:#11132a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:36px;border:2px solid transparent;cursor:pointer}
+.avatarOption.selected{border-color:var(--gold);box-shadow:0 0 10px var(--gold)}
+.glow{box-shadow:0 0 18px var(--gold);animation:blink 1s infinite} @keyframes blink{0%,100%{opacity:1}50%{opacity:.6}}
+
+#loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at top,#2a2d5a,#0e0f1e);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}
+.loginBox{background:var(--panel);border-radius:20px;padding:24px;width:100%;max-width:380px;border:2px solid var(--gold);text-align:center}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+<div class="loginBox">
+<h1 style="color:var(--gold)">☯ TU TIÊN ĐẠI ĐẠO</h1>
+<p class="muted">Bản Avatar - Có hình nhân vật</p>
+<input id="loginUser" placeholder="Tên đăng nhập" maxlength="20">
+<input id="loginPass" type="password" placeholder="Mật khẩu" maxlength="20">
+<div class="actions" style="margin-top:12px;justify-content:center">
+<button class="gold" style="flex:1" onclick="doLogin()">Đăng Nhập</button>
+<button class="green" style="flex:1" onclick="doRegister()">Tạo TK</button>
+</div>
+<p id="loginMsg" class="muted" style="margin-top:10px"></p>
+</div>
+</div>
+
+<main id="mainGame" class="hidden">
+<header><div class="row"><h2 style="margin:6px 0">☯ TU TIÊN <span class="badge" id="userBadge"></span></h2><button class="secondary" onclick="doLogout()">Thoát</button></div></header>
+
+<!-- HIỂN THỊ NHÂN VẬT CÓ HÌNH -->
+<section class="panel">
+<div class="charDisplay">
+<div class="avatarBig" id="avatarBig"><span id="avatarEmoji">🧙</span><span class="equipIcon" id="weaponIcon">⚔️</span></div>
+<div>
+<div class="realm" id="heroName"></div>
+<div id="realmText"></div>
+<div id="costumeText" style="font-size:12px;color:var(--gold)"></div>
+<div id="petShow" style="margin-top:4px"></div>
+<p style="margin:6px 0">⚔ <strong id="power"></strong> LC</p>
+</div>
+</div>
+<div class="muted" style="margin-top:10px">Tu vi</div><div class="bar"><div class="fill" id="xpBar"></div></div><div class="row"><span id="xpText"></span><span id="xpPercent"></span></div>
+</section>
+
+<section class="panel stats"><div class="stat"><small>💎 Đá</small><strong id="stones"></strong></div><div class="stat"><small>❤️ HP</small><strong id="hp"></strong></div><div class="stat"><small>🌿 Đan</small><strong id="pills"></strong></div><div class="stat"><small>🏆 Break</small><strong id="breaks"></strong></div></section>
+
+<nav>
+<button onclick="showTab('cultivation')">🧘 Tu luyện</button>
+<button onclick="showTab('avatar')">🧙 Ngoại hình</button>
+<button onclick="showTab('pet')">🐉 Linh Thú</button>
+<button onclick="showTab('forge')">🔨 Rèn Đồ</button>
+<button onclick="showTab('battle')">⚔ Chiến đấu</button>
+<button onclick="showTab('wheel')">🎰 Quay</button>
+</nav>
+
+<section class="panel" id="tab-cultivation"><h2>🧘 Tu luyện</h2>
+<div class="actions"><button onclick="cultivate(10)">Vận công +10</button><button id="autoBtn" class="secondary" onclick="toggleAuto()">🤖 Tự động</button><button onclick="usePill()">🌿 Dùng đan</button><button id="breakBtn" class="green" onclick="breakthrough()">⚡ Đột phá</button></div><p id="cultivationStatus" class="muted"></p></section>
+
+<section class="panel hidden" id="tab-avatar"><h2>🧙 Chọn Ngoại Hình Nhân Vật</h2>
+<p class="muted">Chọn hình đại diện, trang phục sẽ tự đổi màu theo cảnh giới của bạn!</p>
+<div class="avatarSelect" id="avatarSelect"></div>
+<div class="card"><strong>👘 Trang phục hiện tại:</strong> <span id="costumeName">Áo Vải Phàm Nhân</span><p class="muted" id="costumeDesc">Cấp 0 - Chưa có gì</p></div>
+<div class="card"><strong>🖼️ Xem trước khi Độ Kiếp:</strong><div id="nextCostume" class="muted">Lên Trúc Cơ sẽ thành Đạo Bào Xanh!</div></div>
+</section>
+
+<section class="panel hidden" id="tab-pet"><h2>🐉 Linh Thú</h2><div class="card"><span style="font-size:32px" id="petEmoji">🥚</span> <strong id="petName">Trứng</strong> - Lv.<span id="petLevel">1</span><p class="muted" id="petDesc"></p><div class="bar"><div class="fill" id="petBar"></div></div></div><div class="actions"><button class="gold" onclick="hatchPet()">🥚 Ấp (50 đá)</button><button class="secondary" onclick="feedPet()">🍖 Cho ăn (20 đá)</button><button class="green" onclick="evolvePet()">✨ Tiến Hóa</button></div></section>
+
+<section class="panel hidden" id="tab-forge"><h2>🔨 Rèn Đồ - Vũ khí hiện lên người!</h2><div id="equipList" class="row"></div><div class="actions"><button class="gold" onclick="forgeEquip('kiem')">⚔ Rèn Kiếm</button><button class="gold" onclick="forgeEquip('giap')">👘 Rèn Áo</button><button class="gold" onclick="forgeEquip('nhan')">💍 Rèn Nhẫn</button></div><p class="muted">Rèn xong vũ khí sẽ hiện trên avatar!</p></section>
+
+<section class="panel hidden" id="tab-wheel"><h2>🎰 Vòng Quay</h2><div class="card" style="text-align:center"><div style="font-size:50px" id="wheelEmoji">🎰</div><p>Lượt: <strong id="spinCount">1</strong> | <span id="dailyStatus"></span></p></div><div class="actions"><button class="gold" onclick="dailyCheckin()">📅 Điểm danh</button><button class="green" onclick="spinWheel()">🎰 Quay</button></div><div id="wheelResult" class="card hidden"></div></section>
+
+<section class="panel hidden" id="tab-battle"><h2>⚔ Chiến đấu</h2><div class="card"><div class="row"><strong id="monsterName"></strong><span class="badge" id="monsterRank"></span></div><p>HP: <span id="monsterHP"></span></p><div class="bar"><div class="fill" id="monsterBar"></div></div></div><div class="actions"><button onclick="attackMonster()">⚔ Tấn công</button><button class="secondary" onclick="findMonster()">🔍 Tìm quái</button><button class="green" onclick="useBattlePill()">💊 Hồi HP</button><button class="gold" onclick="fightBoss()">👹 Boss</button></div><p id="battleMessage" class="muted"></p></section>
+
+<section class="panel"><h2>📜 Nhật ký</h2><div class="log" id="journal"></div></section>
+</main>
+
+<script>
+"use strict";
+let currentUser=localStorage.getItem("tdd-current-user");
+const REALMS=["Luyện Khí","Trúc Cơ","Kim Đan","Nguyên Anh","Hóa Thần","Luyện Hư","Hợp Thể","Đại Thừa","Độ Kiếp","Đại Đế"];
+const COSTUMES=[{name:"Áo Vải Phàm Nhân",color:"#9aa0b8",desc:"Áo rách của phàm nhân"},{name:"Đạo Bào Xanh",color:"#2ecc71",desc:"Đệ tử Trúc Cơ"},{name:"Kim Đan Đạo Bào Vàng",color:"#f1c40f",desc:"Kim quang lấp lánh"},{name:"Nguyên Anh Tiên Y",color:"#9b59b6",desc:"Có linh khí bay quanh"},{name:"Hóa Thần Thánh Y",color:"#e74c3c",desc:"Phát sáng đỏ rực"},{name:"Luyện Hư Thần Giáp",color:"#3498db",desc:"Giáp ánh sao"},{name:"Hợp Thể Đế Bào",color:"#f5c76a",desc:"Đế bào vàng kim"},{name:"Đại Thừa Thiên Y",color:"#fff",desc:"Áo trắng tiên khí"},{name:"Độ Kiếp Lôi Bào",color:"#ff00ff",desc:"Có sét chạy quanh"},{name:"Đại Đế Long Bào",color:"gold",desc:"Long bào Chí Tôn - MAX"}];
+const AVATARS=["🧙","🧝‍♂️","🧝‍♀️","🥷","🧛","🧑‍🎤","👨‍🦰","👩‍🦰","🧓","🦸‍♂️","🦸‍♀️","🐉"];
+const PETS=[{emoji:"🐣",name:"Tiểu Kê",power:100},{emoji:"🐺",name:"Phong Lang",power:500},{emoji:"🦁",name:"Liệt Diễm Sư",power:1500},{emoji:"🐉",name:"Thanh Long",power:5000},{emoji:"🐲",name:"Chân Long",power:20000}];
+const MONSTERS=[{name:"Yêu Lang",power:10,hp:60,reward:20,xp:15},{name:"Hùng",power:20,hp:120,reward:35,xp:25},{name:"Độc Xà",power:40,hp:220,reward:60,xp:40},{name:"Cổ Ma Thú",power:120,hp:650,reward:200,xp:100}];
+
+function getUsers(){try{return JSON.parse(localStorage.getItem("tdd-users")||"{}")}catch(e){return{}}}
+function saveUsers(u){localStorage.setItem("tdd-users",JSON.stringify(u))}
+function doRegister(){let u=document.getElementById("loginUser").value.trim(),p=document.getElementById("loginPass").value.trim();if(u.length<3||p.length<3){document.getElementById("loginMsg").textContent="Tên và pass >=3 ký tự";return}let users=getUsers();if(users[u]){document.getElementById("loginMsg").textContent="Tên đã tồn tại";return}users[u]=p;saveUsers(users);localStorage.setItem("tdd-save-v4-"+u,JSON.stringify(freshState(u)));document.getElementById("loginMsg").textContent="Tạo xong! Đang vào...";setTimeout(()=>{currentUser=u;localStorage.setItem("tdd-current-user",u);startGame()},600)}
+function doLogin(){let u=document.getElementById("loginUser").value.trim(),p=document.getElementById("loginPass").value.trim();let users=getUsers();if(!users[u]){document.getElementById("loginMsg").textContent="Chưa có TK này";return}if(users[u]!==p){document.getElementById("loginMsg").textContent="Sai pass";return}currentUser=u;localStorage.setItem("tdd-current-user",u);startGame()}
+function doLogout(){if(confirm("Thoát? Acc vẫn lưu!")){localStorage.removeItem("tdd-current-user");location.reload();}}
+
+const freshState=(uname)=>({name:uname,realm:0,tier:1,xp:0,stones:500,pills:5,hp:100,auto:false,breaks:0,wins:0,world:0,equip:{kiem:0,giap:0,nhan:0},pet:0,petExp:0,petLevel:1,spin:1,daily:"",avatar:0,journal:["Chào "+uname+"!"],chats:[]});
+let state;
+function startGame(){
+ document.getElementById("loginScreen").classList.add("hidden");document.getElementById("mainGame").classList.remove("hidden");document.getElementById("userBadge").textContent=currentUser;
+ try{let s=localStorage.getItem("tdd-save-v4-"+currentUser);state=s?JSON.parse(s):freshState(currentUser);}catch(e){state=freshState(currentUser);}
+ if(state.avatar===undefined)state.avatar=0; if(!state.equip)state.equip={kiem:0,giap:0,nhan:0};
+ renderAvatars(); monster=createMonster(); render(); renderMonster();
+}
+if(currentUser)startGame();
+
+function maxHP(){return 100+state.realm*40+(state.tier-1)*5} 
+function power(){let base=10+state.realm*250+(state.tier-1)*25;let eq=state.equip.kiem+state.equip.giap+state.equip.nhan;let pet=PETS[state.pet]?PETS[state.pet].power*state.petLevel*0.3:0;return Math.floor(base+eq+pet)}
+function needXP(){return 100+state.realm*30+(state.tier-1)*20}
+function save(){localStorage.setItem("tdd-save-v4-"+currentUser,JSON.stringify(state))}
+function note(m){state.journal.unshift(new Date().toLocaleTimeString()+" - "+m);state.journal=state.journal.slice(0,60);save();renderJournal()}
+function render(){
+ document.getElementById("heroName").textContent=state.name;
+ document.getElementById("realmText").textContent=REALMS[state.realm]+" Tầng "+state.tier;
+ let costume=COSTUMES[Math.min(state.realm,COSTUMES.length-1)];
+ document.getElementById("costumeText").textContent="👘 "+costume.name;
+ document.getElementById("costumeName").textContent=costume.name;
+ document.getElementById("costumeDesc").textContent=costume.desc;
+ document.getElementById("nextCostume").textContent=state.realm<9?"Lên "+REALMS[state.realm+1]+" sẽ thành "+COSTUMES[state.realm+1].name:"Đã MAX - "+costume.name;
+ document.getElementById("avatarEmoji").textContent=AVATARS[state.avatar]||"🧙";
+ document.getElementById("avatarBig").style.borderColor=costume.color;
+ document.getElementById("avatarBig").style.boxShadow=`0 0 20px ${costume.color}`;
+ let weapon="⚔️"; if(state.equip.kiem>2000)weapon="🗡️"; if(state.equip.kiem>5000)weapon="⚡🗡️"; if(state.equip.kiem>10000)weapon="🔥🗡️";
+ document.getElementById("weaponIcon").textContent=weapon;
+ document.getElementById("power").textContent=power();
+ document.getElementById("xpBar").style.width=Math.min(100,state.xp/needXP()*100)+"%";
+ document.getElementById("xpText").textContent=state.xp+"/"+needXP();
+ document.getElementById("xpPercent").textContent=Math.floor(state.xp/needXP()*100)+"%";
+ document.getElementById("stones").textContent=state.stones;
+ document.getElementById("hp").textContent=state.hp+"/"+maxHP();
+ document.getElementById("pills").textContent=state.pills;
+ document.getElementById("breaks").textContent=state.breaks;
+ document.getElementById("userBadge").textContent=currentUser;
+ renderPet();renderEquip();renderWheel();renderJournal();
+}
+function renderAvatars(){document.getElementById("avatarSelect").innerHTML=AVATARS.map((a,i)=>`<div class="avatarOption ${state.avatar===i?'selected':''}" onclick="chooseAvatar(${i})">${a}</div>`).join("")}
+function chooseAvatar(i){state.avatar=i;note("Đổi ngoại hình thành "+AVATARS[i]);save();render();renderAvatars();}
+function renderJournal(){let el=document.getElementById("journal");if(el)el.innerHTML=state.journal.map(j=>`<div>${j}</div>`).join("")}
+function autoBreakIfNeeded(){while(state.xp>=needXP()&&state.tier<10){state.xp=0;state.tier++;state.breaks++;state.hp=maxHP();note("✨ Tự đột phá → "+REALMS[state.realm]+" Tầng "+state.tier);}if(state.tier>=10&&state.xp>=needXP()){state.xp=needXP();document.getElementById("cultivationStatus").textContent="🔥 Max Tầng 10! Bấm Đột phá!";document.getElementById("breakBtn").classList.add("glow");if(state.auto){state.auto=false;clearInterval(autoTimer);}}save();render()}
+function cultivate(a){if(state.tier>=10&&state.xp>=needXP())return;state.xp=Math.min(needXP(),state.xp+a);autoBreakIfNeeded();}
+let autoTimer=null;function toggleAuto(){state.auto=!state.auto;if(state.auto){autoTimer=setInterval(()=>{if(state.tier>=10&&state.xp>=needXP()){state.auto=false;clearInterval(autoTimer);save();render();return;}state.xp=Math.min(needXP(),state.xp+6);autoBreakIfNeeded();},800);}save();render();}
+function usePill(){if(state.pills<=0)return alert("Hết đan");if(state.tier>=10&&state.xp>=needXP())return;state.pills--;state.xp=Math.min(needXP(),state.xp+Math.ceil(needXP()*.5));autoBreakIfNeeded();}
+function breakthrough(){if(state.xp<needXP())return alert("Chưa đủ");if(state.tier<10){autoBreakIfNeeded();return;}state.xp=0;state.breaks++;state.stones+=150;if(state.realm<REALMS.length-1){state.realm++;state.tier=1;}state.hp=maxHP();document.getElementById("breakBtn").classList.remove("glow");note("🔥 Đột phá → "+REALMS[state.realm]+" - Mặc "+COSTUMES[state.realm].name+"!");save();render();}
+function renderPet(){let p=PETS[state.pet]||{emoji:"🥚",name:"Trứng"};document.getElementById("petEmoji").textContent=p.emoji;document.getElementById("petName").textContent=p.name;document.getElementById("petLevel").textContent=state.petLevel;document.getElementById("petDesc").textContent=`Lv.${state.petLevel} +${Math.floor(p.power*state.petLevel*0.3)} LC`;document.getElementById("petBar").style.width=Math.min(100,state.petExp)+"%";document.getElementById("petShow").innerHTML=`${p.emoji} ${p.name} Lv.${state.petLevel}`;}
+function hatchPet(){if(state.pet>0)return;if(state.stones<50)return alert("Cần 50 đá");state.stones-=50;state.pet=0;state.petLevel=1;note("Nở "+PETS[0].name);save();render();}
+function feedPet(){if(state.petExp>=100)return alert("Đủ EXP, tiến hóa đi");if(state.stones<20)return alert("Cần 20 đá");state.stones-=20;state.petExp+=20;save();render();}
+function evolvePet(){if(state.petExp<100)return alert("Cần 100 EXP");if(state.pet>=PETS.length-1)return alert("Max");state.petExp=0;state.pet++;state.petLevel++;note(`Tiến hóa ${PETS[state.pet].name}!!`);save();render();}
+function renderEquip(){document.getElementById("equipList").innerHTML=`<div class="card">⚔ Kiếm: +${state.equip.kiem}</div><div class="card">👘 Giáp: +${state.equip.giap}</div><div class="card">💍 Nhẫn: +${state.equip.nhan}</div>`;}
+function forgeEquip(t){let cost=t==='nhan'?150:100;if(state.stones<cost)return alert("Không đủ");state.stones-=cost;let add=Math.floor(300+Math.random()*900);if(Math.random()<0.2){add*=3;note(`💥 Thần Phẩm ${t} +${add}!!`);}state.equip[t]+=add;save();render();}
+function renderWheel(){document.getElementById("dailyStatus").textContent=state.daily===new Date().toDateString()?"Đã điểm danh":"Chưa";document.getElementById("spinCount").textContent=state.spin;}
+function dailyCheckin(){let today=new Date().toDateString();if(state.daily===today)return alert("Đã điểm danh");state.daily=today;state.stones+=100;state.spin++;note("+100 đá điểm danh");save();render();}
+function spinWheel(){if(state.spin<=0)return alert("Hết lượt");state.spin--;let r=[{t:"50 đá",f:()=>state.stones+=50},{t:"100 đá",f:()=>state.stones+=100},{t:"500 đá",f:()=>state.stones+=500},{t:"+1000 kiếm",f:()=>state.equip.kiem+=1000},{t:"Pet +1 Lv",f:()=>state.petLevel++}];let pick=r[Math.floor(Math.random()*r.length)];pick.f();document.getElementById("wheelResult").classList.remove("hidden");document.getElementById("wheelResult").innerHTML=`🎉 Nhận ${pick.t}`;note("Quay: "+pick.t);save();render();}
+let monster;function createMonster(boss=false){let base=MONSTERS[Math.min(MONSTERS.length-1,Math.floor(state.realm/2))];let mult=1+state.realm*0.2;return{name:boss?"Boss "+base.name:base.name,power:Math.ceil(base.power*mult*(boss?3:1)),maxHP:Math.ceil(base.hp*mult*(boss?5:1)),hp:Math.ceil(base.hp*mult*(boss?5:1)),reward:Math.ceil(base.reward*mult*(boss?5:1)),xp:Math.ceil(base.xp*mult*(boss?2:1)),boss};}
+function renderMonster(){if(!monster)monster=createMonster();document.getElementById("monsterName").textContent=monster.name;document.getElementById("monsterRank").textContent=monster.boss?"Boss TG":"Yêu thú";document.getElementById("monsterPower").textContent=monster.power;document.getElementById("monsterHP").textContent=monster.hp+"/"+monster.maxHP;document.getElementById("monsterBar").style.width=monster.hp/monster.maxHP*100+"%";}
+function findMonster(){monster=createMonster(false);renderMonster();}
+function fightBoss(){monster=createMonster(true);renderMonster();}
+function attackMonster(){if(!monster||monster.hp<=0||state.hp<=0)return;let dmg=Math.max(1,Math.floor(power()*(0.8+Math.random()*0.7)));monster.hp=Math.max(0,monster.hp-dmg);let msg=`Gây ${dmg} dame.`;if(monster.hp<=0){state.stones+=monster.reward;state.xp=Math.min(needXP(),state.xp+monster.xp);state.wins++;msg+=` Thắng +${monster.reward} đá`;note("Thắng "+monster.name);autoBreakIfNeeded();}else{let counter=Math.max(1,Math.floor(monster.power*0.15));state.hp=Math.max(0,state.hp-counter);msg+=` Bị phản ${counter}.`;}document.getElementById("battleMessage").textContent=msg;save();render();renderMonster();}
+function useBattlePill(){if(state.pills<=0)return alert("Hết đan");state.pills--;state.hp=Math.min(maxHP(),state.hp+Math.ceil(maxHP()*0.6));save();render();renderMonster();}
+function showTab(id){document.querySelectorAll("[id^='tab-']").forEach(e=>e.classList.add("hidden"));document.getElementById("tab-"+id).classList.remove("hidden");}
+setInterval(save,3000);
+</script>
+</body>
+</html>
