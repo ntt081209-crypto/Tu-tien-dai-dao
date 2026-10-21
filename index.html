@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tu Tiên Đại Lục - Full 23 Hệ Thống</title>
+<style>
+:root{--bg:#0a0e1a;--card:#151c2f;--gold:#f5d76e;--cyan:#00f2ff;--pink:#ff4ecd}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#e6e8f0;font-family:system-ui;overflow:hidden}
+#app{display:flex;height:100vh} #sidebar{width:260px;background:#0f152a;border-right:1px solid #223;overflow-y:auto;padding:10px}
+#main{flex:1;overflow-y:auto;padding:12px} .card{background:var(--card);border:1px solid #2a3558;border-radius:12px;padding:12px;margin-bottom:10px}
+button{background:#1e2a4a;color:#fff;border:1px solid #3a4a7a;border-radius:8px;padding:8px 12px;cursor:pointer} button:hover{background:#2a3a6a}
+.gold{color:var(--gold)} .cyan{color:var(--cyan)} .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.char{width:120px;height:120px;margin:auto;background:radial-gradient(circle,var(--cyan),#000);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:60px;animation:float 2s infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.bar{height:10px;background:#222;border-radius:5px;overflow:hidden} .bar>div{height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold))}
+.tab{display:none} .tab.active{display:block} .side-btn{width:100%;text-align:left;margin:3px 0}
+.hon-hoan{display:inline-block;width:22px;height:22px;border-radius:50%;border:2px solid #fff;margin:2px}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="sidebar">
+<h3 class="gold">TU TIÊN ĐẠI LỤC</h3>
+<div id="charView" class="char">🧘</div>
+<div id="info"></div>
+<hr>
+<button class="side-btn" onclick="showTab('tuluyen')">1. Tu Luyện</button>
+<button class="side-btn" onclick="showTab('thegioi')">5. Khám Phá (8 Map)</button>
+<button class="side-btn" onclick="showTab('dongphu')">6. Động Phủ</button>
+<button class="side-btn" onclick="showTab('luyendan')">7. Luyện Đan</button>
+<button class="side-btn" onclick="showTab('luyenqi')">8. Luyện Khí</button>
+<button class="side-btn" onclick="showTab('chiến')">9. Đánh Quái / Boss</button>
+<button class="side-btn" onclick="showTab('pet')">11. Linh Thú</button>
+<button class="side-btn" onclick="showTab('tongmon')">12. Tông Môn</button>
+<button class="side-btn" onclick="showTab('skin')">13. Thời Trang (19 Skin)</button>
+<button class="side-btn" onclick="showTab('daolu')">14. Đạo Lữ</button>
+<button class="side-btn" onclick="showTab('other')">15-23. BXH/Ải/Tháp/Hồn Hoàn</button>
+</div>
+<div id="main">
+<!-- TU LUYEN -->
+<div id="tuluyen" class="tab active">
+<div class="card">
+<h2>Tu Luyện</h2>
+<p>Linh Căn: <b id="linhcan"></b> - Dame x<span id="damemul"></span></p>
+<p>Cảnh giới: <b id="canhgioi" class="gold"></b> - Tầng <span id="tang"></span>/9</p>
+<div class="bar"><div id="expbar" style="width:0%"></div></div>
+<p>Tu Vi: <span id="tuvi"></span> / <span id="tuviMax"></span></p>
+<button onclick="tuLuyenClick()">Bấm Tu Luyện +20</button>
+<label><input type="checkbox" id="autoCheck" onchange="toggleAuto()"> Auto Tu Luyện</label>
+<button onclick="dotPha()">Đột Phá & Lôi Kiếp</button>
+<div id="logLoiKiep"></div>
+<div id="honhoanDisplay"></div>
+</div>
+<div class="card"><h3>Nhật Ký</h3><div id="nhatky" style="max-height:120px;overflow:auto"></div></div>
+</div>
+
+<div id="thegioi" class="tab">
+<div class="card"><h3>Khám Phá Thế Giới - 8 Map</h3><div id="maps" class="grid2"></div></div>
+</div>
+
+<div id="dongphu" class="tab">
+<div class="card"><h3>Động Phủ</h3><p>Linh Thạch: <span id="linhtachDP">0</span> / <span id="khoDP">500</span></p>
+<p>Sản lượng: <span id="sanluong">1</span>/10s</p><button onclick="nangCapDP()">Nâng cấp (50 đá)</button><button onclick="thuThachDP()">Thu Hoạch</button></div>
+</div>
+
+<div id="luyendan" class="tab">
+<div class="card"><h3>Luyện Đan</h3><p>Linh Thảo: <span id="thaom">0</span></p><button onclick="luyenDan()">Luyện: 5 thảo -> 1 đan (70% thất bại)</button><p>Đan dược: <span id="danduoc">0</span> (+100 tu vi khi dùng) <button onclick="dungDan()">Dùng</button></p></div>
+</div>
+
+<div id="luyenqi" class="tab">
+<div class="card"><h3>Luyện Khí</h3><p>Linh Thạch: <span id="linhtachLK">0</span></p><p>Lực Chiến: <span id="power">0</span></p><button onclick="luyenKhi()">20 đá -> +5 power vĩnh viễn</button></div>
+</div>
+
+<div id="chiến" class="tab">
+<div class="card"><h3>Chiến Đấu Quái (20 loại)</h3><div id="quaiList" class="grid2"></div></div>
+<div class="card"><h3>Bí Cảnh Boss Toàn Server</h3><p>Boss: <b id="bossName"></b> - Máu: <span id="bossHp"></span></p><div class="bar"><div id="bossBar"></div></div><button onclick="danhBoss()">Đánh Boss</button><p>Quà càng nhiều máu càng nhiều</p></div>
+<div class="card"><h3>Vượt Ải & Leo Tháp</h3><p>Ải: <span id="ai"></span>/10000 <button onclick="vuotAi()">Vượt Ải</button> | Tháp: <span id="thap"></span>/5000 <button onclick="leoThap()">Leo Tháp</button></p></div>
+</div>
+
+<div id="pet" class="tab">
+<div class="card"><h3>Linh Thú Pet - Giao Long</h3><p>Cấp: <span id="petLv">0</span> - Cấp càng cao cộng dame</p><button onclick="batPet()">Bắt Giao Long (tốn 50 thảo)</button><button onclick="choPetAn()">Cho ăn 5 thảo = +1 cấp</button><button onclick="tienHoaPet()">Tiến Hóa (Lv10)</button></div>
+</div>
+
+<div id="tongmon" class="tab">
+<div class="card"><h3>Tông Môn (5 Tông)</h3><div id="tongList"></div><p>Bonus hiện tại: <span id="tongBonus"></span></p><button onclick="lamNhiemVuTong()">Làm Nhiệm Vụ Tông (+20 đá)</button></div>
+</div>
+
+<div id="skin" class="tab">
+<div class="card"><h3>Thời Trang - 19 Skin theo Cảnh Giới</h3><div id="skinList" class="grid2"></div></div>
+</div>
+
+<div id="daolu" class="tab">
+<div class="card"><h3>Đạo Lữ Song Tu</h3><p id="daoluInfo">Chưa có đạo lữ</p><button onclick="ketDaoLu()">Kết Đạo Lữ Random (x3 tốc độ)</button><button onclick="chiaTay()">Chia Tay</button></div>
+</div>
+
+<div id="other" class="tab">
+<div class="card"><h3>Hồn Hoàn - Đấu La (10 vòng tối đa)</h3><p id="honhoanInfo"></p><button onclick="hienThiHonHoan()">Rớt hồn hoàn khi đánh quái (đã tích hợp)</button></div>
+<div class="card"><h3>Hòm Thư (10 gói tân thủ)</h3><div id="mail"></div></div>
+<div class="card"><h3>Đăng Nhập 1 Năm</h3><p>Ngày: <span id="loginDay"></span>/365 <button onclick="nhanQuaDangNhap()">Nhận Quà</button></p></div>
+<div class="card"><h3>Thành Tựu + BXH + Chợ & Chat</h3>
+<p>Thành tựu: <span id="thanhtuu"></span>/10</p>
+<div id="bxh"></div>
+<div><input id="chatIn" placeholder="Truyền âm..."><button onclick="sendChat()">Gửi</button><div id="chatBox"></div></div>
+<div><p>Chợ: Bán 10 thảo = 10 đá <button onclick="banThao()">Bán</button></p></div>
+</div>
+</div>
+
+</div>
+</div>
+<script>
+const CANHGIOI=["Luyện Khí","Trúc Cơ","Kim Đan","Nguyên Anh","Hóa Thần","Luyện Hư","Hợp Thể","Đại Thừa","Đại Đế","Chân Tiên","Tiên Vương","Tiên Đế Hắc Kim","Lôi Thần","Hỗn Độn Thần","Thiên Đạo","Sáng Thế","Vô Thượng","Vĩnh Hằng"];
+const LINHCAN=[{n:"Thiên Linh Căn",d:3},{n:"Chân Linh Căn",d:2.5},{n:"Ngụy Linh Căn",d:1.5},{n:"Lôi Linh Căn",d:2.8},{n:"Băng Linh Căn",d:2.6},{n:"Phong Linh Căn",d:2.4},{n:"Ám Linh Căn",d:2.7},{n:"Quang Linh Căn",d:2.7},{n:"Hỗn Độn Linh Căn",d:3},{n:"Tiên Thiên Linh Căn",d:3},{n:"Thánh Linh Căn",d:2.9},{n:"Thần Linh Căn",d:3},{n:"Phế Linh Căn",d:1.5}];
+const QUAI=["Yêu Thỏ","Dã Lang","Hồ Yêu","Cương Thi","Âm Binh","Huyết Ma","Yêu Vương","Quỷ Tướng","Ma Tướng","Long Quyển","Viêm Ma","Băng Ma","Lôi Thú","Phong Yêu","Ám Ma","Quang Thú","Tà Thần","Ma Long","Thiên Ma","Ma Tôn"];
+const MAPS=["Thanh Vân Trấn","U Ám Sâm Lâm","Hoang Mạc Tử Vong","Băng Phong Cốc","Lôi Đình Sơn","Hỏa Diệm Sơn","Tiên Linh Đảo","Hỗn Độn Hư Không"];
+const TONG=["Thiên Kiếm Tông","Hợp Hoan Tông","Đan Đỉnh Tông","Vạn Thú Tông","Lôi Ẩn Tông"];
+
+let S=JSON.parse(localStorage.getItem('tuTienFull_v2')||'null')||{
+tuvi:0, tang:1, canh:0, linhcan: LINHCAN[Math.floor(Math.random()*LINHCAN.length)], linhthach:100, linhthao:50, power:10, petLv:0, hasPet:false,
+dp:{prod:1, store:0, cap:500, lv:1}, ai:1, thap:1, danduoc:0, honhoan:[], boss:{hp:50000,max:50000,name:"Thiên Ma Boss"},
+tong:-1, daolu:null, skin:0, thanhtuu:0, loginDay:1, mails:[...Array(10)].map((_,i)=>({id:i,txt:`Gói Tân Thủ VIP ${i+1}: +${(i+1)*100} đá +${(i+1)*10} thảo`,claimed:false})),
+chat:[], nhatky:[], bxhPower:100, offline:Date.now()
+};
+// Offline tu vi
+let diff=Math.floor((Date.now()-S.offline)/1000);
+if(diff>10){let add=Math.floor(diff*S.dp.prod*0.5);S.tuvi+=add;S.nhatky.push(`Offline ${diff}s nhận ${add} tu vi`);}
+
+function save(){S.offline=Date.now();localStorage.setItem('tuTienFull_v2',JSON.stringify(S));}
+function showTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function logNK(t){S.nhatky.unshift(`${new Date().toLocaleTimeString()} - ${t} tuổi ${S.canh*9+S.tang} đột phá`);if(S.nhatky.length>50)S.nhatky.pop();}
+function tuLuyenClick(){let mul=S.daolu?3:1;S.tuvi+=20*mul;checkTang();render();}
+function toggleAuto(){}
+let autoInt=setInterval(()=>{if(document.getElementById('autoCheck').checked){tuLuyenClick();}},1000);
+function checkTang(){let max=100*S.tang*Math.pow(1.5,S.canh);if(S.tuvi>=max){S.tuvi-=max;S.tang++;if(S.tang>9){S.tang=1;S.canh++;logNK(`Tự động đột phá ${CANHGIOI[S.canh]}`);if(S.canh>=8)checkThanhTuu();}}}
+function dotPha(){
+let need=100*S.tang*Math.pow(1.5,S.canh);
+if(S.tuvi<need)return alert('Chưa đủ tu vi');
+if(Math.random()<0.4){document.getElementById('logLoiKiep').innerHTML=`<span class="cyan">Lôi Kiếp giáng xuống! Bạn vượt qua!</span>`;S.tuvi-=need;S.tang++;
+if(S.tang>9){if(S.canh===8){alert('PHI THĂNG TIÊN GIỚI! Bạn đạt Đại Đế!');S.canh++;S.tang=1;}else{S.canh++;S.tang=1;}logNK(`Độ kiếp thành công lên ${CANHGIOI[S.canh]}`);}
+}else{document.getElementById('logLoiKiep').innerHTML=`<span style="color:red">Độ kiếp thất bại, mất 50% tu vi!</span>`;S.tuvi=Math.floor(S.tuvi*0.5);}
+render();
+}
+function render(){
+document.getElementById('linhcan').innerText=S.linhcan.n;document.getElementById('damemul').innerText=S.linhcan.d;
+document.getElementById('canhgioi').innerText=CANHGIOI[S.canh]||'Vĩnh Hằng';document.getElementById('tang').innerText=S.tang;
+document.getElementById('tuvi').innerText=Math.floor(S.tuvi);let max=100*S.tang*Math.pow(1.5,S.canh);document.getElementById('tuviMax').innerText=Math.floor(max);
+document.getElementById('expbar').style.width=Math.min(100,S.tuvi/max*100)+'%';
+document.getElementById('linhtachDP').innerText=Math.floor(S.dp.store);document.getElementById('khoDP').innerText=S.dp.cap;document.getElementById('sanluong').innerText=S.dp.prod;
+document.getElementById('thaom').innerText=S.linhthao;document.getElementById('danduoc').innerText=S.danduoc;
+document.getElementById('linhtachLK').innerText=S.linhthach;document.getElementById('power').innerText=Math.floor(S.power+S.petLv*5+S.linhcan.d*10);
+document.getElementById('ai').innerText=S.ai;document.getElementById('thap').innerText=S.thap;
+document.getElementById('petLv').innerText=S.petLv;document.getElementById('loginDay').innerText=S.loginDay;
+document.getElementById('thanhtuu').innerText=S.thanhtuu;document.getElementById('nhatky').innerHTML=S.nhatky.join('<br>');
+document.getElementById('bossName').innerText=S.boss.name;document.getElementById('bossHp').innerText=Math.floor(S.boss.hp);document.getElementById('bossBar').style.width=(S.boss.hp/S.boss.max*100)+'%';
+document.getElementById('honhoanDisplay').innerHTML=S.honhoan.map(h=>`<span class="hon-hoan" style="background:${h.color}"></span>`).join('')+` ${S.honhoan.length}/10 hồn hoàn`;
+document.getElementById('honhoanInfo').innerText=`Đã có ${S.honhoan.length} hồn hoàn: `+S.honhoan.map(h=>h.year+' năm').join(', ');
+document.getElementById('info').innerHTML=`Tu Vi: ${Math.floor(S.tuvi)}<br>Lực: ${Math.floor(S.power)}<br>Thảo:${S.linhthao} Đá:${S.linhthach}`;
+document.getElementById('tongBonus').innerText=S.tong>=0?TONG[S.tong]+' +20% dame':'Chưa gia nhập';
+document.getElementById('daoluInfo').innerText=S.daolu?`Đạo lữ: ${S.daolu} (x3 tu luyện)`:'Chưa có';
+document.getElementById('charView').innerText=['🧘','🧙','⚔️','🐉'][S.skin%4];
+save();
+}
+setInterval(()=>{S.dp.store=Math.min(S.dp.cap,S.dp.store+S.dp.prod);render();},10000);
+// Maps
+document.getElementById('maps').innerHTML=MAPS.map((m,i)=>`<div class="card"><b>${m}</b><br><button onclick="khamPha(${i})">Khám Phá</button></div>`).join('');
+function khamPha(i){let r=Math.random();if(r<0.7){S.linhthao+=5+i;alert(`Nhặt được ${5+i} linh thảo ở ${MAPS[i]}`);}else{S.linhthach+=10+i*2;alert(`Nhặt được ${10+i*2} linh thạch`);}if(Math.random()<0.1){themHonHoan();}render();}
+// Dong Phu
+function nangCapDP(){if(S.linhthach>=50){S.linhthach-=50;S.dp.prod+=1;S.dp.cap+=200;S.dp.lv++;}render();}
+function thuThachDP(){S.linhthach+=S.dp.store;S.dp.store=0;render();}
+// Luyen Dan/Khi
+function luyenDan(){if(S.linhthao<5)return alert('Thiếu thảo');S.linhthao-=5;if(Math.random()<0.3){S.danduoc++;alert('Luyện thành công!');}else alert('Thất bại! Đan nổ!');render();}
+function dungDan(){if(S.danduoc>0){S.danduoc--;S.tuvi+=100;checkTang();render();}}
+function luyenKhi(){if(S.linhthach<20)return alert('Thiếu đá');S.linhthach-=20;S.power+=5;render();}
+// Quai
+document.getElementById('quaiList').innerHTML=QUAI.map((q,i)=>`<div class="card"><b>${q}</b> HP:${100+i*80}<br><button onclick="danhQuai(${i})">Đánh</button></div>`).join('');
+function danhQuai(i){let dame=S.power*S.linhcan.d+S.petLv*10;let hp=100+i*80;if(dame>hp*0.5){S.linhthao+=2;S.linhthach+=5;if(Math.random()<0.15)themHonHoan();S.thanhtuu=Math.min(10,S.thanhtuu+1);alert(`Thắng ${QUAI[i]}! +5 đá +2 thảo`);}else alert('Thua! Tăng lực chiến đi');render();}
+function danhBoss(){let dame=S.power*S.linhcan.d;S.boss.hp-=dame;if(S.boss.hp<=0){let qua=Math.floor(S.boss.max/100);S.linhthach+=qua;S.linhthao+=qua/2;S.boss.max=5000+Math.floor(Math.random()*95000);S.boss.hp=S.boss.max;alert(`Boss chết! Nhận ${qua} quà siêu phong phú!`);}render();}
+function themHonHoan(){if(S.honhoan.length>=10)return;let years=[100,500,1000,5000,10000,50000,100000];let colors=["#fff","#ff0","#f0f","#000","#f00","#0ff","#f5d76e"];let idx=Math.floor(Math.random()*years.length);S.honhoan.push({year:years[idx],color:colors[idx]});}
+// Pet
+function batPet(){if(S.linhthao<50)return alert('Thiếu thảo');if(S.hasPet)return alert('Đã có pet');S.linhthao-=50;S.hasPet=true;S.petLv=1;render();}
+function choPetAn(){if(!S.hasPet)return alert('Chưa có pet');if(S.linhthao<5)return;S.linhthao-=5;S.petLv++;render();}
+function tienHoaPet(){if(S.petLv>=10){S.petLv=11;alert('Giao Long tiến hóa thành Chân Long! +100 power');S.power+=100;render();}}
+// Tong
+document.getElementById('tongList').innerHTML=TONG.map((t,i)=>`<button onclick="giaNhapTong(${i})">${t}</button>`).join(' ');
+function giaNhapTong(i){S.tong=i;render();}
+function lamNhiemVuTong(){if(S.tong<0)return alert('Chưa vào tông');S.linhthach+=20;render();}
+// Skin
+document.getElementById('skinList').innerHTML=CANHGIOI.map((c,i)=>`<div class="card">${c}<br><button onclick="doiSkin(${i})" ${S.canh<i?'disabled':''}>${S.canh>=i?'Mặc':'Chưa mở'}</button></div>`).join('');
+function doiSkin(i){S.skin=i;render();}
+// Dao Lu
+function ketDaoLu(){let names=["Tiểu Bạch","Liễu Thần","Hỏa Vũ","Tuyết Nhi","Linh Lung"];S.daolu=names[Math.floor(Math.random()*names.length)];render();}
+function chiaTay(){S.daolu=null;render();}
+// Ai Thap
+function vuotAi(){if(S.power> S.ai*2){S.ai++;S.linhthach+=10;if(S.ai>10000)S.ai=10000;}else alert('Lực chiến yếu');render();}
+function leoThap(){if(S.power> S.thap*3){S.thap++;S.linhthach+=20;if(S.thap>5000)S.thap=5000;}else alert('Tháp quá khó');render();}
+// Mail login
+function renderMail(){document.getElementById('mail').innerHTML=S.mails.map(m=>`<div>${m.txt} ${m.claimed?'(Đã nhận)':`<button onclick="claimMail(${m.id})">Nhận</button>`}</div>`).join('');}
+function claimMail(id){if(S.mails[id].claimed)return;S.mails[id].claimed=true;S.linhthach+=(id+1)*100;S.linhthao+=(id+1)*10;renderMail();render();}
+function nhanQuaDangNhap(){if(S.loginDay>365)return alert('Đã nhận hết 1 năm');S.linhthach+=100;S.loginDay++;render();}
+function banThao(){if(S.linhthao>=10){S.linhthao-=10;S.linhthach+=10;render();}}
+function sendChat(){let v=document.getElementById('chatIn').value;if(!v)return;S.chat.unshift(v);document.getElementById('chatBox').innerHTML=S.chat.slice(0,20).join('<br>');document.getElementById('chatIn').value='';}
+function checkThanhTuu(){S.thanhtuu++;}
+function hienThiHonHoan(){}
+render();renderMail();
+document.getElementById('bxh').innerHTML=`BXH Lực Chiến: Bạn #${Math.floor(Math.random()*100)} - ${Math.floor(S.power)} lực`;
+</script>
+</body>
+</html>
